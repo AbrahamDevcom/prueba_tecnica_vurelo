@@ -54,12 +54,25 @@ class MovieDetailController extends Notifier<MovieDetailState> {
     if (vids.isEmpty) return null;
     try {
       return vids.firstWhere(
-        (v) => v.type.toLowerCase() == 'trailer' && v.site.toLowerCase() == 'youtube',
+        (v) =>
+            v.type.toLowerCase() == 'trailer' &&
+            v.site.toLowerCase() == 'youtube',
       );
     } catch (_) {
       return vids.first;
     }
   }
+
+  void clear() {
+    state = MovieDetailState(
+      loading: false,
+      detail: null,
+      videos: [],
+      error: null,
+    );
+  }
 }
 
-final movieDetailControllerProvider = NotifierProvider<MovieDetailController, MovieDetailState>(MovieDetailController.new);
+final movieDetailControllerProvider =
+    NotifierProvider<MovieDetailController, MovieDetailState>(
+        MovieDetailController.new);

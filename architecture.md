@@ -22,7 +22,6 @@ CinePulse es una aplicación móvil Flutter que consume la API de TMDb para most
 3. **Detalle de Película**
    - Información completa: título, descripción, fecha, imagen, puntuación, géneros
    - Botón para ver tráiler (opcional)
-   - Hero animations y transiciones suaves
    - Layout responsive y atractivo
 
 4. **Cache Offline**
@@ -33,7 +32,6 @@ CinePulse es una aplicación móvil Flutter que consume la API de TMDb para most
 5. **Animaciones y Transiciones**
    - Animaciones de entrada escalonadas
    - Transiciones de página personalizadas
-   - Hero animations para imágenes
    - Micro-interacciones en botones y elementos UI
 
 ## Arquitectura Modular

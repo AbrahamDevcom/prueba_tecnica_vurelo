@@ -1,4 +1,4 @@
-package com.mycompany.CounterApp
+package com.vurelo.emovie
 
 import io.flutter.embedding.android.FlutterActivity
 

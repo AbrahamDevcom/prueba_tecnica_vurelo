@@ -28,50 +28,53 @@ class MovieCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Hero(
-                tag: 'movie_${movie.id}',
-                child: Container(
-                  width: width,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: movie.posterPath.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: movie.fullPosterUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              color: Theme.of(context).colorScheme.surface,
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
+              child: Container(
+                width: width,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: movie.posterPath.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: movie.fullPosterUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Theme.of(context).colorScheme.surface,
+                            child: const Center(
+                              child: CircularProgressIndicator(),
                             ),
-                            errorWidget: (context, url, error) => Container(
-                              color: Theme.of(context).colorScheme.surface,
-                              child: Icon(
-                                Icons.movie,
-                                size: 40,
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                              ),
-                            ),
-                          )
-                        : Container(
+                          ),
+                          errorWidget: (context, url, error) => Container(
                             color: Theme.of(context).colorScheme.surface,
                             child: Icon(
                               Icons.movie,
                               size: 40,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.5),
                             ),
                           ),
-                  ),
+                        )
+                      : Container(
+                          color: Theme.of(context).colorScheme.surface,
+                          child: Icon(
+                            Icons.movie,
+                            size: 40,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.5),
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -79,8 +82,8 @@ class MovieCard extends StatelessWidget {
             Text(
               movie.title,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+                    fontWeight: FontWeight.w600,
+                  ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -96,8 +99,11 @@ class MovieCard extends StatelessWidget {
                 Text(
                   movie.voteAverage.toStringAsFixed(1),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
                 ),
               ],
             ),

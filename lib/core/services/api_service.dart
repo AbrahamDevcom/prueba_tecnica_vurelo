@@ -19,11 +19,14 @@ class ApiService {
 
     try {
       final url = Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.upcomingMovies}?api_key=${ApiConstants.apiKey}&language=es-ES&page=1');
+          '${ApiConstants.baseUrl}${ApiConstants.upcomingMovies}?&language=es-ES&page=1');
 
-      final response = await _client.get(url, headers: {
-        "Authorization": "Bearer ${ApiConstants.apiKey}",
-      });
+      final response = await _client.get(
+        url,
+        headers: {
+          "Authorization": "Bearer ${ApiConstants.apiKey}",
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -47,9 +50,14 @@ class ApiService {
 
     try {
       final url = Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.trendingMovies}?api_key=${ApiConstants.apiKey}&language=es-ES');
+          '${ApiConstants.baseUrl}${ApiConstants.trendingMovies}?&language=es-ES');
 
-      final response = await _client.get(url);
+      final response = await _client.get(
+        url,
+        headers: {
+          "Authorization": "Bearer ${ApiConstants.apiKey}",
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -73,9 +81,14 @@ class ApiService {
 
     try {
       final url = Uri.parse(
-          '${ApiConstants.baseUrl}${ApiConstants.movieDetails}/$movieId?api_key=${ApiConstants.apiKey}&language=es-ES');
+          '${ApiConstants.baseUrl}${ApiConstants.movieDetails}/$movieId?&language=es-ES');
 
-      final response = await _client.get(url);
+      final response = await _client.get(
+        url,
+        headers: {
+          "Authorization": "Bearer ${ApiConstants.apiKey}",
+        },
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

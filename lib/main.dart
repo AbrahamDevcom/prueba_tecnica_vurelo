@@ -5,7 +5,7 @@ import 'package:cinepulse/theme.dart';
 import 'package:cinepulse/features/movies/screens/home_screen.dart';
 
 void main() async {
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env.production");
   runApp(const ProviderScope(child: MyApp()));
 }
 

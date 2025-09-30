@@ -29,7 +29,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
   final DraggableScrollableController _dragController =
       DraggableScrollableController();
   double _sheetSize = 0.35;
-  bool _isSheetExpanded = false; // Para controlar el comportamiento del scroll
 
   @override
   void initState() {
@@ -59,8 +58,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
     _dragController.addListener(() {
       setState(() {
         _sheetSize = _dragController.size;
-        // Consideramos que el sheet está expandido cuando supera el 70%
-        _isSheetExpanded = _sheetSize > 0.7;
       });
     });
 
@@ -74,6 +71,11 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
   void dispose() {
     _animationController.dispose();
     _dragController.dispose();
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(movieDetailControllerProvider.notifier).clear();
+      }
+    });
     super.dispose();
   }
 
@@ -105,23 +107,12 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         children: [
           // Background image full-bleed
           Positioned.fill(
-            child: Hero(
-              tag: 'movie_${widget.movie.id}',
-              child: posterUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: posterUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(color: surface),
-                      errorWidget: (context, url, error) => Container(
-                        color: surface,
-                        child: Icon(
-                          Icons.movie,
-                          size: 64,
-                          color: onSurface.withValues(alpha: 0.3),
-                        ),
-                      ),
-                    )
-                  : Container(
+            child: posterUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: posterUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(color: surface),
+                    errorWidget: (context, url, error) => Container(
                       color: surface,
                       child: Icon(
                         Icons.movie,
@@ -129,7 +120,15 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
                         color: onSurface.withValues(alpha: 0.3),
                       ),
                     ),
-            ),
+                  )
+                : Container(
+                    color: surface,
+                    child: Icon(
+                      Icons.movie,
+                      size: 64,
+                      color: onSurface.withValues(alpha: 0.3),
+                    ),
+                  ),
           ),
 
           // Gradient scrim
@@ -194,95 +193,104 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         ? null
         : ref.read(movieDetailControllerProvider.notifier).trailerVideo;
 
-    return DraggableScrollableSheet(
-      controller: _dragController,
-      initialChildSize: 0.35,
-      minChildSize: 0.25,
-      maxChildSize: 0.92,
-      snap: true,
-      snapSizes: const [0.35, 0.6, 0.92],
-      builder: (context, scrollController) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Container(
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(24)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, -8),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Grab handle - área más grande para facilitar el drag
-                  GestureDetector(
-                    onTap: () {
-                      // Alternar entre collapsed y expanded
-                      if (_sheetSize < 0.5) {
-                        _dragController.animateTo(
-                          0.6,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                        _dragController.animateTo(
-                          0.35,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(2),
+    return NotificationListener<DraggableScrollableNotification>(
+      onNotification: (notification) {
+        setState(() {
+          _sheetSize = notification.extent;
+        });
+        return false;
+      },
+      child: DraggableScrollableSheet(
+        controller: _dragController,
+        initialChildSize: 0.35,
+        minChildSize: 0.25,
+        maxChildSize: 0.92,
+        snap: true,
+        snapSizes: const [0.35, 0.6, 0.92],
+        builder: (context, scrollController) {
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(24)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, -8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Grab handle - área interactiva para drag
+                    GestureDetector(
+                      onTap: () {
+                        // Alternar entre collapsed y expanded
+                        if (_sheetSize < 0.5) {
+                          _dragController.animateTo(
+                            0.6,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        } else {
+                          _dragController.animateTo(
+                            0.35,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        }
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        color: Colors.transparent,
+                        child: Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.25),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // Header con título, rating y botón de trailer
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: _buildHeaderRow(context, state, trailer),
-                  ),
+                    // Header con título, rating y botón de trailer
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: _buildHeaderRow(context, state, trailer),
+                    ),
 
-                  const SizedBox(height: 4),
+                    const SizedBox(height: 4),
 
-                  // Body scrollable - CLAVE: usar NeverScrollableScrollPhysics cuando el sheet no está expandido
-                  Expanded(
-                    child: state.loading
-                        ? _buildLoadingList(context, scrollController)
-                        : state.error != null
-                            ? _buildErrorList(
-                                context, state.error!, scrollController)
-                            : _buildDetailList(
-                                context, state, scrollController),
-                  ),
-                ],
+                    // Body scrollable
+                    Expanded(
+                      child: state.loading
+                          ? _buildLoadingList(context, scrollController)
+                          : state.error != null
+                              ? _buildErrorList(
+                                  context, state.error!, scrollController)
+                              : _buildDetailList(
+                                  context, state, scrollController),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -329,10 +337,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
   Widget _buildLoadingList(BuildContext context, ScrollController controller) {
     return ListView(
       controller: controller,
-      // CLAVE: Controlar la física del scroll basado en el estado del sheet
-      physics: _isSheetExpanded
-          ? const AlwaysScrollableScrollPhysics()
-          : const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       children: [
         Skeletonizer(
@@ -414,9 +418,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
       BuildContext context, String message, ScrollController controller) {
     return ListView(
       controller: controller,
-      physics: _isSheetExpanded
-          ? const AlwaysScrollableScrollPhysics()
-          : const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 48),
       children: [
         Column(
@@ -464,10 +465,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
 
     return ListView(
       controller: controller,
-      // CLAVE: Esta es la línea más importante para el comportamiento correcto
-      physics: _isSheetExpanded
-          ? const AlwaysScrollableScrollPhysics()
-          : const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
       children: [
         // Meta row
@@ -501,33 +498,6 @@ class _MovieDetailScreenState extends ConsumerState<MovieDetailScreen>
         const SizedBox(height: 24),
 
         if (movieDetail != null) _buildAdditionalInfo(context, movieDetail),
-
-        // Añadir contenido extra para probar el scroll cuando está expandido
-        if (_isSheetExpanded) ...[
-          const SizedBox(height: 32),
-          Text(
-            'Información adicional',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-          ),
-          const SizedBox(height: 16),
-          ...List.generate(
-              5,
-              (index) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(
-                      'Línea de contenido adicional ${index + 1} para probar el scroll interno cuando el sheet está completamente expandido.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.7),
-                          ),
-                    ),
-                  )),
-        ],
       ],
     );
   }
